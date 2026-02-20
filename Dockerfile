@@ -43,6 +43,7 @@ RUN useradd -u 1000 -ms /bin/bash -g www-globalyhub www-globalyhub
 # Copy entire Laravel project
 COPY --chown=www-globalyhub:www-globalyhub . /var/www/
 
+RUN cp .env.example .env || true
 
 USER www-globalyhub
 
