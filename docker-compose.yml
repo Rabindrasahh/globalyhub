@@ -6,6 +6,7 @@ services:
       dockerfile: Dockerfile
     container_name: globalyhub_app
     working_dir: /var/www
+    user: "1000:1000"
     volumes:
       - .:/var/www
     depends_on:
