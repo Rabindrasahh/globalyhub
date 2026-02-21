@@ -1,6 +1,6 @@
 # 🚀 Notification System – Laravel 12 (Dockerized)
 
-# 📦 Tech Stack
+### Tech Stack
 
 - Laravel 12
 - PHP 8.4 (FPM)
@@ -9,31 +9,63 @@
 - Nginx Web Server
 - Docker & Docker Compose
 
----
+## Features
 
-# 📁 Features
-
-## ✅ Part 1 – Notification Publishing API
+### Part 1 – Notification Publishing API
 
 - Create notifications via REST API
 - Store notifications in PostgreSQL
 - Publish notification jobs to Redis Queue
 
-## ✅ Part 2 – Queue Processing
+### Part 2 – Queue Processing
 
 - Redis-based queue worker
-- Simulated notification sending using `Log::info()`
 - Automatic retry with exponential backoff
 - Status updates in database (`pending`, `processed`, `failed`)
 
-## ✅ Part 3 – Monitoring APIs
+### Part 3 – Monitoring APIs
 
 - Retrieve recent notifications (with filters)
 - Get notification summary (counts by status)
 
----
+### 🐳 Docker Setup Guide
 
-# 🐳 Docker Setup Guide
+#### Clone the Repository
 
-## 1️⃣ Clone the Repository
-# globalyhub
+git clone https://github.com/Rabindrasahh/globalyhub.git
+cd globalyhub
+
+#### Copy Environment File
+
+cp .env.example .env
+
+#### Build Docker Containers
+
+docker-compose build
+
+#### Start Containers
+
+docker-compose up -d
+
+#### Install Dependencies (Composer)
+
+docker compose exec globalyhub_app bash
+composer install
+
+#### Generate Application Key
+
+php artisan key:generate
+
+#### Run Migrations
+
+php artisan migrate
+
+#### Access the Application
+
+http://localhost:8000
+
+## Alternative Method
+
+### Setup using bash command
+
+./setup.sh
