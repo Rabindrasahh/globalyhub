@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreNotificationRequest;
 use App\Repositories\Interfaces\NotificationRepositoryInterface;
 use Illuminate\Http\JsonResponse;
+use App\Services\NotificationService;
 use Exception;
 
 
 class NotificationController extends Controller
 {
     public function __construct(
-        private NotificationRepositoryInterface $repository
+        private NotificationRepositoryInterface $repository,
+        private NotificationService $service
     ) {}
 
     /**
@@ -36,6 +38,10 @@ class NotificationController extends Controller
     {
         try {
             $notification = $this->repository->create($request->validated());
+            $this->service->clearCache(
+                $notification->user_id,
+                $notification->tenant_id ?? null
+            );
             return $this->success($notification, 'Notification Created Successfully', 201);
         } catch (Exception $e) {
             return $this->error('Failed to create notification', $e->getCode(), $e->getTrace());
@@ -67,7 +73,10 @@ class NotificationController extends Controller
     {
         try {
             $notification = $this->repository->update($id, $request->validated());
-
+            $this->service->clearCache(
+                $notification->user_id,
+                $notification->tenant_id ?? null
+            );
             if (!$notification) {
                 return $this->error('Not Found', 404);
             }
@@ -84,8 +93,15 @@ class NotificationController extends Controller
     public function destroy(int $id): JsonResponse
     {
         try {
-            $deleted = $this->repository->delete($id);
+            $notification = $this->repository->find($id);
 
+            $deleted = $this->repository->delete($id);
+            if ($notification) {
+                $this->service->clearCache(
+                    $notification->user_id,
+                    $notification->tenant_id ?? null
+                );
+            }
             if (!$deleted) {
                 return $this->error('Not Found', 404);
             }
@@ -102,7 +118,7 @@ class NotificationController extends Controller
     public function recent(int $userId): JsonResponse
     {
         try {
-            $notifications = $this->repository->getUserNotifications($userId);
+            $notifications = $this->service->getRecent($userId);
             return $this->success($notifications, 'Recent Notifications Fetched Successfully');
         } catch (Exception $e) {
             return $this->error('Failed to fetch recent notifications', $e->getCode(), $e->getTrace());
@@ -115,7 +131,7 @@ class NotificationController extends Controller
     public function summary(?int $tenantId = null): JsonResponse
     {
         try {
-            $stats = $this->repository->getStats($tenantId);
+            $stats = $this->service->getSummary($tenantId);
             return $this->success($stats, 'Notification Summary Fetched Successfully');
         } catch (Exception $e) {
             return $this->error('Failed to fetch summary', $e->getCode(), $e->getTrace());
