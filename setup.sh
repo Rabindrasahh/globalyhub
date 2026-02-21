@@ -1,25 +1,29 @@
-#!/bin/bash  
+#!/bin/bash
 set -e
 
-# export USER_ID=$(id -u)
-# export GROUP_ID=$(id -g)
+echo "🚀 Starting Laravel Docker Setup..."
 
-echo "🚀 Starting Setup..."
-
-# Create .env if not exists
+# Create .env if it does not exist
 [ ! -f .env ] && cp .env.example .env
 
-# Start containers
+# Build and start containers
 docker compose up -d --build
 
-# Git safe directory
-docker compose exec globalyhub_app git config --global --add safe.directory /var/www || true
+# Set git safe directory inside container
+docker compose exec -u root globalyhub_app git config --global --add safe.directory /var/www || true
 
-chmod -R 775 storage bootstrap/cache || true
+# Fix ownership and permissions as root
+docker compose exec -u root globalyhub_app bash -c "
+  chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache &&
+  chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+"
 
-docker compose exec globalyhub_app composer install
+# Install PHP dependencies
+docker compose exec -u root globalyhub_app composer install
+# Generate app key if not set
+grep -q '^APP_KEY=.\+' .env || docker compose exec -u root globalyhub_app php artisan key:generate
 
-docker compose exec globalyhub_app php artisan key:generate
-docker compose exec globalyhub_app php artisan migrate --force --seed
+# Run migrations & seeders
+docker compose exec -u root globalyhub_app php artisan migrate --force --seed
 
-echo "Project Setup Done!"
+echo "✅ Laravel Project Setup Done!"
