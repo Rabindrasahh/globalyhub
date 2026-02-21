@@ -26,4 +26,6 @@ grep -q '^APP_KEY=.\+' .env || docker compose exec -u root globalyhub_app php ar
 # Run migrations & seeders
 docker compose exec -u root globalyhub_app php artisan migrate --force --seed
 
+docker compose exec -u root globalyhub_app php artisan optimize
+
 echo "✅ Laravel Project Setup Done!"
