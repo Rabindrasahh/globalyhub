@@ -66,6 +66,7 @@ http://localhost:8000
 
 ## Alternative Method
 
-### Setup using bash command
+### Setup using bash command after cloning the project and cd globalyhub
 
+chmod +x setup.sh
 ./setup.sh
